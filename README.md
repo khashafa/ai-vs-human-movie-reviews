@@ -4,7 +4,7 @@ When Do Large Language Models Diverge From Human Judgments?
 
 > If you’re only going to scan one thing: read **Key Findings** + look
 > at the **Figures**.
-> 
+
 ## Objective
 
 **Goal:** Identify *when* and *why* large language models disagree with
@@ -46,7 +46,7 @@ the rating scripts
 
 - Parse raw IMDb review JSON → clean ratings + review text
 - Pull minimal OMDb metadata to **filter to movies** and attach
-  `movie_title` (type is used for filtering, not kept as a column)
+  `movie_title`
 
 ### Generate AI ratings (same prompt + scale across models)
 
@@ -229,18 +229,6 @@ way:
 - **~77%** of ratings land within **±1** of the human rating for those
   same models
 
-The pattern that jumps out is how tightly **GPT-4o-mini, GPT-5.1, and
-Claude-Opus 4.1** cluster — they behave *really* similarly on these
-broad metrics.
-
-**Claude-3 Haiku is the exception.** It shows meaningfully higher error
-and a lower share within ±1.
-
-But even with that “pretty good” snapshot, the more important issue
-shows up once you look past accuracy alone:
-
-**Models are miscalibrated in *how they use* the 1–10 scale.**
-
 <details>
 
 <summary>
@@ -294,15 +282,6 @@ p01
 </details>
 
 ![](AiMovies_files/figure-gfm/fig_01_intro_performance_snapshot-1.png)<!-- -->
-
-### A quick accuracy snapshot: the models mostly cluster — Haiku is the outlier
-
-At first glance, the models look pretty “accurate” in a simple, headline
-way:
-
-- **Mean absolute error** is about **~1 point** for most models
-- **~77%** of ratings land within **±1** of the human rating for those
-  same models
 
 The pattern that jumps out is how tightly **GPT-4o-mini, GPT-5.1, and
 Claude-Opus 4.1** cluster — they behave *really* similarly on these
@@ -570,14 +549,15 @@ delta_tbl
     ## 1 Base: polarity + polarity^2 + model… 0.0425 0.0419 32836   NA          NA     
     ## 2 Full: + conflict + word_count + rea… 0.0434 0.0427 32836    0.001       0.0008
 
-The dominance of sentiment polarity is also visible in the quadratic
-relationship between polarity and disagreement. Disagreement is
-**highest for reviews with mixed or moderate sentiment** and lower for
-strongly positive or strongly negative reviews.
+The dominance of sentiment polarity is also visible in its relationship
+with disagreement. While the effect is weak overall, disagreement
+**increases as reviews become more positive**, making polarity the
+strongest text-based predictor relative to the others.
 
-This pattern suggests that models struggle most when human judgment is
-nuanced rather than extreme. Clear praise or clear dislike is easier to
-align with; ambivalence is not.
+This pattern suggests that models tend to drift upward on enthusiastic
+or strongly positive reviews, using the upper end of the scale in ways
+that do not always align with human judgments. In contrast, negative or
+neutral reviews show less divergence.
 
 The table below summarizes the standardized coefficients and 95%
 confidence intervals from the full model.
@@ -639,25 +619,27 @@ p05
 ## Conclusion: Calibration Matters More Than Accuracy
 
 This project shows that disagreement between language models and humans
-is not just a matter of accuracy, but of **calibration**. Even when
+is not just a matter of **accuracy**, but of **calibration**. Even when
 models closely track human ratings on average, they do not use rating
 scales in human ways.
 
 Claude models compress the scale, avoiding extremes and shrinking
-variance. GPT-5.1, by contrast, largely skips the midpoint and
+variance. **GPT-5.1**, by contrast, largely skips the midpoint and
 reallocates mass toward low and high ratings, producing **polarization
-rather than centralization**. These patterns persist across movies and
-remain visible even after controlling for both movie identity and model
-identity.
+rather than centralization**. These calibration patterns persist across
+movies and remain visible even after controlling for both **movie
+identity** and **model identity**. While individual movies vary
+substantially in how much disagreement they generate, these calibration
+differences are consistent across content.
 
 While text features such as sentiment polarity and conflict provide
-statistically detectable signal, their practical contribution is modest.
-Most disagreement remains unexplained by simple surface features,
-suggesting that ambiguity, tone, and human interpretive nuance continue
-to pose challenges for current models.
+statistically detectable signal, their **practical contribution is
+modest**. **Most disagreement remains unexplained** by simple surface
+features, suggesting that ambiguity, tone, and human interpretive nuance
+continue to pose challenges for current models.
 
 The broader implication is that **high correlation with human judgments
 does not guarantee interpretability or comparability**. If model scores
 are to be used for evaluation, recommendation, or trend analysis,
-calibration — not just accuracy — must be treated as a first-class
-concern.
+**calibration — not just accuracy — must be treated as a first-class
+concern**.
