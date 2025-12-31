@@ -67,6 +67,13 @@ subjectivity, word count (with quadratic sentiment term)
 
 ## Libraries
 
+<details>
+
+<summary>
+
+Show code: Libraries
+</summary>
+
 ``` r
 library(tidyverse)
 library(broom)
@@ -75,12 +82,23 @@ library(here)
 library(forcats)
 ```
 
+</details>
+
 ## Load data
+
+<details>
+
+<summary>
+
+Show code: Load data
+</summary>
 
 ``` r
 df <- read_csv(here("data", "processed", "selected_movies_with_ai_4models.csv"))
 glimpse(df)
 ```
+
+</details>
 
     ## Rows: 8,209
     ## Columns: 14
@@ -100,6 +118,13 @@ glimpse(df)
     ## $ sentiment_conflict <dbl> 0.110, 0.098, 0.109, 0.155, 0.114, 0.162, 0.073, 0.…
 
 ## Data prep (create reusable “long” tables once)
+
+<details>
+
+<summary>
+
+Show code: Data prep (long tables)
+</summary>
 
 ``` r
 review_long <- df %>%
@@ -191,6 +216,8 @@ review_std <- review_long_feat %>%
   )
 ```
 
+</details>
+
 ## Key Findings
 
 ### A quick accuracy snapshot: the models mostly cluster — Haiku is the outlier
@@ -213,6 +240,13 @@ But even with that “pretty good” snapshot, the more important issue
 shows up once you look past accuracy alone:
 
 **Models are miscalibrated in *how they use* the 1–10 scale.**
+
+<details>
+
+<summary>
+
+Show code: Figure 01: Intro performance snapshot
+</summary>
 
 ``` r
 metrics <- review_long %>%
@@ -257,6 +291,8 @@ p01 <- ggplot(plot_df, aes(x = value, y = model)) +
 p01
 ```
 
+</details>
+
 ![](AiMovies_files/figure-gfm/fig_01_intro_performance_snapshot-1.png)<!-- -->
 
 ### A quick accuracy snapshot: the models mostly cluster — Haiku is the outlier
@@ -279,6 +315,13 @@ But even with that “pretty good” snapshot, the more important issue
 shows up once you look past accuracy alone:
 
 **Models are miscalibrated in *how they use* the 1–10 scale.**
+
+<details>
+
+<summary>
+
+Show code: Figure 02: Scale usage difference
+</summary>
 
 ``` r
 p_by <- dist_long %>%
@@ -312,6 +355,8 @@ p02 <- ggplot(p_diff, aes(x = factor(rating_int), y = diff)) +
 p02
 ```
 
+</details>
+
 ![](AiMovies_files/figure-gfm/fig_02_scale_usage_difference-1.png)<!-- -->
 
 ### The midpoint problem: every model avoids rating **5**
@@ -328,6 +373,12 @@ just 0.51% of ratings**, more than **12× less frequent than humans**.
 This pattern indicates a systematic collapse of the mid-scale. Even when
 models correlate strongly with human ratings, they fail to use the 1–10
 scale in a human way.
+<details>
+
+<summary>
+
+Show code: Table: Midpoint (exactly 5)
+</summary>
 
 ``` r
 midpoint_tbl <- dist_long %>%
@@ -342,6 +393,8 @@ midpoint_tbl <- dist_long %>%
 
 midpoint_tbl
 ```
+
+</details>
 
     ## # A tibble: 5 × 2
     ##   subject         pct_exactly_5
@@ -364,6 +417,13 @@ the middle and reassign mass to extremes.**
 
 ### Movie identity explains more disagreement than model identity
 
+<details>
+
+<summary>
+
+Show code: Figure 03: Mean disagreement by movie
+</summary>
+
 ``` r
 movie_long_ordered <- movie_long %>%
   group_by(movie_title) %>%
@@ -384,6 +444,8 @@ p03 <- ggplot(movie_long_ordered, aes(x = mean_abs_disagreement, y = movie_title
 p03
 ```
 
+</details>
+
 ![](AiMovies_files/figure-gfm/fig_03_mean_abs_disagreement_by_movie-1.png)<!-- -->
 When restricting the analysis to the three stronger models (excluding
 Claude-3 Haiku), **movie identity explains approximately 66% of the
@@ -396,6 +458,12 @@ misleadingly. With all four models included, model-only and movie-only
 R² appear similar (~0.33 each). This does not indicate broad separation
 between models; rather, it reflects the influence of a single
 underperforming outlier.
+<details>
+
+<summary>
+
+Show code: Figure 04: Variance explained (R2)
+</summary>
 
 ``` r
 lm_model_only_4 <- lm(mean_abs_disagreement ~ model, data = movie_long_4)
@@ -434,6 +502,8 @@ p04 <- ggplot(results, aes(x = spec, y = r2)) +
 p04
 ```
 
+</details>
+
 ![](AiMovies_files/figure-gfm/fig_04_variance_explained_r2-1.png)<!-- -->
 
 ### Text features add signal… but the lift is modest
@@ -452,6 +522,12 @@ While this improvement is statistically significant (nested-model test p
 \< 2.2e−16), the practical lift is modest. Even with text features
 included, over 95% of variation in disagreement remains unexplained by
 these variables.
+<details>
+
+<summary>
+
+Show code: Models: Multiple regression + delta R2
+</summary>
 
 ``` r
 m_base <- lm(
@@ -486,6 +562,8 @@ delta_tbl <- tibble(
 delta_tbl
 ```
 
+</details>
+
     ## # A tibble: 2 × 6
     ##   spec                                     r2 adj_r2     n delta_r2 delta_adj_r2
     ##   <chr>                                 <dbl>  <dbl> <dbl>    <dbl>        <dbl>
@@ -500,6 +578,16 @@ strongly positive or strongly negative reviews.
 This pattern suggests that models struggle most when human judgment is
 nuanced rather than extreme. Clear praise or clear dislike is easier to
 align with; ambivalence is not.
+
+The table below summarizes the standardized coefficients and 95%
+confidence intervals from the full model.
+
+<details>
+
+<summary>
+
+Show code: Figure 05: Coefficient plot (text features)
+</summary>
 
 ``` r
 coef_tbl <- tidy(m_full, conf.int = TRUE) %>%
@@ -543,6 +631,8 @@ p05 <- ggplot(plot_df, aes(x = estimate, y = term)) +
 
 p05
 ```
+
+</details>
 
 ![](AiMovies_files/figure-gfm/fig_05_multiple_regression_text_features-1.png)<!-- -->
 
