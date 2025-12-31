@@ -3,9 +3,8 @@ When Do Large Language Models Diverge From Human Judgments?
 2025-12-29
 
 > If you’re only going to scan one thing: read **Key Findings** + look
-> at the **Figures**. If you want the full “show your work” version,
-> jump to **Depth (optional)**.
-
+> at the **Figures**.
+> 
 ## Objective
 
 **Goal:** Identify *when* and *why* large language models disagree with
