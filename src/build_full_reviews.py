@@ -43,7 +43,7 @@ def load_all_reviews():
                     "movie_id": movie_id,
                     "review_title": title,
                     "review": text,
-                    "rating": rating_int,
+                    "human_rating": rating_int,
                     "review_word_count": word_count,
                 }
             )

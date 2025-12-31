@@ -12,8 +12,7 @@ N_MOVIES = 20
 def fetch_single_movie(movie_id: str, api_key: str):
     """Fetch metadata for a single IMDb ID from OMDb.
 
-    Returns a dict with movie_id, title, year, genres (raw string), type,
-    and imdb_rating, or None if the API call fails.
+    Returns a dict with movie_id, movie_title, type, and imdb_rating, or None if the API call fails.
     """
     url = f"http://www.omdbapi.com/?i={movie_id}&apikey={api_key}"
 
@@ -27,9 +26,7 @@ def fetch_single_movie(movie_id: str, api_key: str):
 
         return {
             "movie_id": movie_id,
-            "title": data.get("Title"),
-            "year": data.get("Year"),
-            "genres": data.get("Genre"),  # e.g. "Horror, Drama, Comedy"
+            "movie_title": data.get("Title"),
             "type": data.get("Type"),      # movie / series / episode
             "imdb_rating": data.get("imdbRating"),  # string like "7.3"
         }
@@ -74,6 +71,9 @@ def main():
 
     # 5. Keep only actual movies (type == "movie")
     movies_only = merged[merged["type"] == "movie"].copy()
+    # `type` is only used to filter to movies; drop it from the exported dataset
+    if "type" in movies_only.columns:
+        movies_only = movies_only.drop(columns=["type"])
     print("Movie-only shape:", movies_only.shape)
 
     # 6. Save the final enriched dataset for the selected movies

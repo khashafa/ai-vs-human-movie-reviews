@@ -24,26 +24,14 @@ def main():
     input_path = Path("data/processed/selected_movies_reviews_enriched.csv")
     df = pd.read_csv(input_path)
 
-    # 2) Rename OMDb title -> movie_title for clarity
-    if "title" in df.columns:
-        df = df.rename(columns={"title": "movie_title"})
-
-    # 3) Drop ID/type columns we don't need in the final analysis CSV
-    for col in ["movie_id", "type"]:
+    # 3) Drop ID columns we don't need in the final analysis CSV
+    for col in ["movie_id"]:
         if col in df.columns:
             df = df.drop(columns=[col])
-
-    # 4) Make sure genres is not missing (string form)
-    df["genres"] = df["genres"].fillna("Unknown")
 
     # Ensure imdb_rating is numeric if it exists
     if "imdb_rating" in df.columns:
         df["imdb_rating"] = pd.to_numeric(df["imdb_rating"], errors="coerce")
-
-    # Create genre dummy columns from fixed genre list
-    fixed_genres = ["Action","Adventure","Animation","Comedy","Crime","Drama","Family","Fantasy","History","Horror","Music","Musical","Mystery","Romance","Sci-Fi","Sport","Thriller"]
-    for g in fixed_genres:
-        df[f"genre_{g}"] = df["genres"].str.contains(rf"\b{g}\b", case=False, regex=True).astype(int)
 
     # 5) Build combined text "review_title: review" and compute features
     analyzer = SentimentIntensityAnalyzer()
@@ -87,26 +75,22 @@ def main():
     # We don't need combined_text in the final CSV
     df = df.drop(columns=["combined_text"])
 
-    # 6) Reorder columns: movie_title first, then key fields, then features, then genre dummies
+    # 6) Reorder columns: movie_title first, then key fields, then features
     base_cols = [
         "movie_title",
         "imdb_rating",
         "review_title",
         "review",
-        "rating",
+        "human_rating",
         "review_word_count",
-        "year",
-        "genres",
         "sentiment_polarity",
         "sentiment_conflict",
         "subjectivity",
         "readability",
     ]
 
-    genre_cols = [c for c in df.columns if c.startswith("genre_")]
-    other_cols = [c for c in df.columns if c not in base_cols and c not in genre_cols]
-
-    ordered_cols = base_cols + other_cols + genre_cols
+    other_cols = [c for c in df.columns if c not in base_cols]
+    ordered_cols = base_cols + other_cols
     df = df[ordered_cols]
 
     # 7) Save the final analysis-ready CSV
