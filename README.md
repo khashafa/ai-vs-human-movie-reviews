@@ -13,7 +13,7 @@ disagreement using interpretable text features and regression.
 
 ## Background & Motivation
 
-I came into SI 544 from a film / storytelling background. What I like
+I come from a film production and media design background. What I like
 about movie reviews is that they’re messy in a very human way: people
 hedge, exaggerate, contradict themselves, and sometimes write like
 they’re arguing with their past self.
