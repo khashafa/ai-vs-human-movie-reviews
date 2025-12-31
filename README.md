@@ -11,7 +11,7 @@ When Do Large Language Models Diverge From Human Judgments?
 human sentiment ratings of movie reviews, and quantify the drivers of
 disagreement using interpretable text features and regression.
 
-## Background & Motivation (the short version)
+## Background & Motivation
 
 I came into SI 544 from a film / storytelling background. What I like
 about movie reviews is that they’re messy in a very human way: people
